@@ -5,12 +5,17 @@ import { CircleEntity, KnifeEntity } from '@entities';
 import { TargetEntity } from '../entities/target/TargetEntity.ts';
 
 export class GameScene extends Phaser.Scene implements Scene {
-  private canThrow = true;
-  private validHit = true;
-  private knifeGroup!: Phaser.GameObjects.Group;
-  private circle!: Phaser.GameObjects.Sprite;
-  private knife!: KnifeEntity;
-  private target!: TargetEntity;
+  canThrow = true;
+  validHit = true;
+
+
+  knifeGroup!: Phaser.GameObjects.Group;
+  circle!: Phaser.GameObjects.Sprite;
+  knife!: KnifeEntity;
+  target!: TargetEntity;
+
+  score = 0;
+  scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('PlayGame');
@@ -34,6 +39,12 @@ export class GameScene extends Phaser.Scene implements Scene {
     // Слой с колесом будет спереди
     this.circle.depth = 1;
     this.input.on('pointerdown', this.throwKnife);
+
+    // Score text
+    this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, {
+        fontSize: 40
+      }
+    );
 
     const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     spaceBar.on('down', this.throwKnife);
@@ -61,6 +72,8 @@ export class GameScene extends Phaser.Scene implements Scene {
       this.target.x = this.circle.x + ((this.circle.width - 200) / 2) * Math.cos(radians);
       this.target.y = this.circle.y + ((this.circle.width - 200) / 2) * Math.sin(radians);
     }
+
+    this.scoreText.text = 'Score: ' + this.score;
   }
 
   throwKnife = () => {
@@ -83,6 +96,7 @@ export class GameScene extends Phaser.Scene implements Scene {
               const angleOffset = Math.abs(Phaser.Math.Angle.ShortestBetween(this.circle.angle, knife.threwAngle));
               if (angleOffset < Constants.MIN_ANGLE) {
                 this.validHit = false;
+                this.score = 0;
                 break;
               }
             }
@@ -96,6 +110,8 @@ export class GameScene extends Phaser.Scene implements Scene {
 
               const slice = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 1);
               const slice2 = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 2);
+
+              this.score += 25;
 
               slice
                 .setAngle(this.target.angle)
@@ -120,6 +136,7 @@ export class GameScene extends Phaser.Scene implements Scene {
             threwKnife.setThrewAngle(this.circle.angle);
             this.knife.y = this.getKnifeCoords().y;
             this.canThrow = true;
+            this.score += 10;
           } else {
             this.tweens.add({
               targets: [this.knife],

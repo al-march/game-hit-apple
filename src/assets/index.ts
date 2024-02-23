@@ -20,5 +20,12 @@ export const Assets = {
       name: 'default_target',
       path: apple
     }
+  },
+  FONTS: {
+    desyrel: {
+      key: 'desyrel',
+      png: 'public/fonts/Atari Sunset.png',
+      xml: 'public/fonts/atari-sunset.xml'
+    }
   }
 };
