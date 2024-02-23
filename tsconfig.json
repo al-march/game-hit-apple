@@ -27,9 +27,12 @@
       "@scenes": [
         "./src/scenes/index.ts"
       ],
+      "@entities": [
+        "./src/entities/index.ts"
+      ],
       "@constants": [
         "./src/constants/index.ts"
-      ]
+      ],
     }
   },
   "include": ["src"]

@@ -1,11 +1,13 @@
 import { Assets } from '@assets';
 import { Constants } from '@constants';
+import { Scene } from './Scene.ts';
+import { BlackKnife } from '@entities';
 
-export class GameScene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene implements Scene {
     private canThrow = true;
     private knifeGroup!: Phaser.GameObjects.Group;
-    private knife!: Phaser.GameObjects.Sprite;
     private circle!: Phaser.GameObjects.Sprite;
+    private knife!: BlackKnife;
 
     constructor() {
         super('PlayGame');
@@ -52,22 +54,30 @@ export class GameScene extends Phaser.Scene {
                 onComplete: () => {
                     this.canThrow = true;
                     this.addKnife(this.knife.x, this.knife.y);
-                    this.knife.y = toInt(this.game.config.height) / 5 * 4;
+                    this.knife.y = this.getKnifeCoords().y;
                 }
             });
         }
     };
 
     private addKnife(x: number, y: number) {
-        const knife = this.add.sprite(x, y, Assets.KNIFES.BLACK.name);
+        const knife = new BlackKnife(this, x, y, Assets.KNIFES.BLACK.name);
         this.knifeGroup.add(knife);
     }
 
     private initKnife() {
+        const {x, y} = this.getKnifeCoords();
+        return new BlackKnife(this, x, y, Assets.KNIFES.BLACK.name);
+    }
+
+    private getKnifeCoords() {
         const config = this.scene.scene.game.config;
         const {width, height} = config;
 
-        return this.add.sprite(toInt(width) / 2, toInt(height) / 5 * 4, Assets.KNIFES.BLACK.name);
+        return {
+            x: toInt(width) / 2,
+            y: toInt(height) / 5 * 4.4,
+        };
     }
 
     private initCircle() {

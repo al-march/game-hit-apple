@@ -3,10 +3,16 @@ import { GameScene } from '@scenes';
 import './style.css';
 
 const config = {
-    width: 750,
-    height: 1334,
+    width: 600,
+    height: 1200,
     backgroundColor: 0x444444,
     scene: [GameScene],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: true,
+        }
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
