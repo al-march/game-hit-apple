@@ -1,4 +1,4 @@
-import { Entity } from './Entity.ts';
+import { Entity } from '../Entity.ts';
 import { Assets } from '@assets';
 
 export class BlackKnife extends Entity {
@@ -6,15 +6,10 @@ export class BlackKnife extends Entity {
         scene: Phaser.Scene,
         x: number,
         y: number,
-        texture: string
     ) {
-        super(scene, x, y, texture, Assets.KNIFES.BLACK.name);
+        super(scene, x, y, Assets.KNIFES.BLACK.name, Assets.KNIFES.BLACK.name);
         this.scene = scene;
         this.scene.add.existing(this);
         this.setScale(0.5)
-    }
-
-    update() {
-        console.log('update!');
     }
 }

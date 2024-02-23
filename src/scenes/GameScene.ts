@@ -1,7 +1,7 @@
 import { Assets } from '@assets';
 import { Constants } from '@constants';
 import { Scene } from './Scene.ts';
-import { BlackKnife } from '@entities';
+import { BlackCircle, BlackKnife } from '@entities';
 
 export class GameScene extends Phaser.Scene implements Scene {
     private canThrow = true;
@@ -25,6 +25,9 @@ export class GameScene extends Phaser.Scene implements Scene {
         // Слой с колесом будет спереди
         this.circle.depth = 1;
         this.input.on('pointerdown', this.throwKnife);
+
+        const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        spaceBar.on('down', this.throwKnife)
     }
 
     update() {
@@ -37,8 +40,8 @@ export class GameScene extends Phaser.Scene implements Scene {
                     const radians = Phaser.Math.DegToRad(knife.angle + 90);
 
                     // тригонометрия, чтобы заставить нож вращаться вокруг центра мишени
-                    knife.x = this.circle.x + (this.circle.width / 2) * Math.cos(radians);
-                    knife.y = this.circle.y + (this.circle.width / 2) * Math.sin(radians);
+                    knife.x = this.circle.x + ((this.circle.width - 120) / 2) * Math.cos(radians);
+                    knife.y = this.circle.y + ((this.circle.width - 120) / 2) * Math.sin(radians);
                 }
             });
     }
@@ -49,8 +52,10 @@ export class GameScene extends Phaser.Scene implements Scene {
 
             this.tweens.add({
                 targets: [this.knife],
-                y: this.circle.y + this.circle.width / 2,
+                y: this.circle.y - 120 + this.circle.width / 2,
                 duration: Constants.SPEED.THROW,
+                callbackScope: this,
+
                 onComplete: () => {
                     this.canThrow = true;
                     this.addKnife(this.knife.x, this.knife.y);
@@ -61,13 +66,13 @@ export class GameScene extends Phaser.Scene implements Scene {
     };
 
     private addKnife(x: number, y: number) {
-        const knife = new BlackKnife(this, x, y, Assets.KNIFES.BLACK.name);
+        const knife = new BlackKnife(this, x, y);
         this.knifeGroup.add(knife);
     }
 
     private initKnife() {
         const {x, y} = this.getKnifeCoords();
-        return new BlackKnife(this, x, y, Assets.KNIFES.BLACK.name);
+        return new BlackKnife(this, x, y);
     }
 
     private getKnifeCoords() {
@@ -83,7 +88,9 @@ export class GameScene extends Phaser.Scene implements Scene {
     private initCircle() {
         const config = this.scene.scene.game.config;
         const {width} = config;
-        return this.add.sprite(toInt(width) / 2, 400, Assets.CIRCLES.BLACK.name);
+        const x = toInt(width) / 2;
+        const y = 300;
+        return new BlackCircle(this, x, y);
     }
 }
 
