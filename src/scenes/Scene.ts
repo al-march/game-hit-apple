@@ -1,4 +1,4 @@
 export interface Scene {
-    preload: () => void;
-    create: () => void;
+  preload: () => void;
+  create: () => void;
 }

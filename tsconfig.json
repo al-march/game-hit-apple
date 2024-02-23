@@ -32,8 +32,10 @@
       ],
       "@constants": [
         "./src/constants/index.ts"
-      ],
+      ]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
