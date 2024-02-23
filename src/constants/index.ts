@@ -5,7 +5,7 @@ export const Constants = {
   },
   SPEED: {
     THROW: 150,
-    ROTATION: 2,
+    ROTATION: 1,
   },
   ROTATION: {
     INITIAL: 2,

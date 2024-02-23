@@ -1,14 +1,16 @@
 import { Assets } from '@assets';
 import { Constants } from '@constants';
 import { Scene } from './Scene.ts';
-import { BlackCircle, BlackKnife } from '@entities';
+import { CircleEntity, KnifeEntity } from '@entities';
+import { TargetEntity } from '../entities/target/TargetEntity.ts';
 
 export class GameScene extends Phaser.Scene implements Scene {
   private canThrow = true;
   private validHit = true;
   private knifeGroup!: Phaser.GameObjects.Group;
   private circle!: Phaser.GameObjects.Sprite;
-  private knife!: BlackKnife;
+  private knife!: KnifeEntity;
+  private target!: TargetEntity;
 
   constructor() {
     super('PlayGame');
@@ -17,12 +19,18 @@ export class GameScene extends Phaser.Scene implements Scene {
   preload() {
     this.load.image(Assets.CIRCLES.DEFAULT.name, Assets.CIRCLES.DEFAULT.path);
     this.load.image(Assets.KNIFES.DEFAULT.name, Assets.KNIFES.DEFAULT.path);
+    this.load.spritesheet(Assets.TARGETS.DEFAULT.name, Assets.TARGETS.DEFAULT.path, {
+      frameWidth: 70,
+      frameHeight: 96
+    });
   }
 
   create() {
+    this.canThrow = true;
     this.knifeGroup = this.add.group();
     this.knife = this.initKnife();
     this.circle = this.initCircle();
+    this.target = this.initTarget();
     // Слой с колесом будет спереди
     this.circle.depth = 1;
     this.input.on('pointerdown', this.throwKnife);
@@ -31,20 +39,28 @@ export class GameScene extends Phaser.Scene implements Scene {
     spaceBar.on('down', this.throwKnife);
   }
 
-  update() {
-    this.circle.angle += Constants.SPEED.ROTATION;
+  update(_: number, offset: number) {
+    const rotation = Constants.SPEED.ROTATION * (offset * 0.25);
+    this.circle.angle += rotation;
     this.knifeGroup
       .getChildren()
       .forEach(knife => {
         if (isSprite(knife)) {
-          knife.angle += Constants.SPEED.ROTATION;
+          knife.angle += rotation;
           const radians = Phaser.Math.DegToRad(knife.angle + 90);
 
           // тригонометрия, чтобы заставить нож вращаться вокруг центра мишени
-          knife.x = this.circle.x + ((this.circle.width - 120) / 2) * Math.cos(radians);
-          knife.y = this.circle.y + ((this.circle.width - 120) / 2) * Math.sin(radians);
+          knife.x = this.circle.x + ((this.circle.width) / 2) * Math.cos(radians);
+          knife.y = this.circle.y + ((this.circle.width) / 2) * Math.sin(radians);
         }
       });
+
+    if (!this.target.isHit) {
+      this.target.angle += rotation;
+      const radians = Phaser.Math.DegToRad(this.target.angle - 90);
+      this.target.x = this.circle.x + ((this.circle.width - 200) / 2) * Math.cos(radians);
+      this.target.y = this.circle.y + ((this.circle.width - 200) / 2) * Math.sin(radians);
+    }
   }
 
   throwKnife = () => {
@@ -53,7 +69,7 @@ export class GameScene extends Phaser.Scene implements Scene {
 
       this.tweens.add({
         targets: [this.knife],
-        y: this.circle.y - 120 + this.circle.width / 2,
+        y: this.circle.y + this.circle.width / 2,
         duration: Constants.SPEED.THROW,
         callbackScope: this,
 
@@ -73,6 +89,33 @@ export class GameScene extends Phaser.Scene implements Scene {
           }
 
           if (this.validHit) {
+            const isHitToAnTarget = Math.abs(Phaser.Math.Angle.ShortestBetween(this.circle.angle, 180 - this.target.startAngle)) < Constants.MIN_ANGLE;
+            if (isHitToAnTarget && !this.target.isHit) {
+              this.target.setIsHit(true);
+              this.target.destroy();
+
+              const slice = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 1);
+              const slice2 = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 2);
+
+              slice
+                .setAngle(this.target.angle)
+                .setOrigin(0.5, 1);
+
+              const y = Constants.GAME.HEIGHT + this.target.height;
+              const x = Phaser.Math.Between(0, Constants.GAME.WIDTH);
+
+              this.tweens.add({
+                targets: [slice, slice2],
+                angle: 45,
+                duration: Constants.SPEED.THROW * 6,
+                y,
+                x,
+                onComplete: () => {
+                  this.scene.start('PlayGame');
+                }
+              });
+            }
+
             const threwKnife = this.addKnife(this.knife.x, this.knife.y);
             threwKnife.setThrewAngle(this.circle.angle);
             this.knife.y = this.getKnifeCoords().y;
@@ -95,14 +138,9 @@ export class GameScene extends Phaser.Scene implements Scene {
   };
 
   private addKnife(x: number, y: number) {
-    const knife = new BlackKnife(this, x, y);
+    const knife = new KnifeEntity(this, x, y);
     this.knifeGroup.add(knife);
     return knife;
-  }
-
-  private initKnife() {
-    const {x, y} = this.getKnifeCoords();
-    return new BlackKnife(this, x, y);
   }
 
   private getKnifeCoords() {
@@ -115,12 +153,31 @@ export class GameScene extends Phaser.Scene implements Scene {
     };
   }
 
+  private initKnife() {
+    const {x, y} = this.getKnifeCoords();
+    return new KnifeEntity(this, x, y);
+  }
+
   private initCircle() {
     const config = this.scene.scene.game.config;
     const {width} = config;
     const x = toInt(width) / 2;
     const y = 300;
-    return new BlackCircle(this, x, y);
+    return new CircleEntity(this, x, y);
+  }
+
+  private initTarget() {
+    const targetAngle = Phaser.Math.Between(0, 360);
+    const radians = Phaser.Math.DegToRad(targetAngle - 90);
+
+    const x = this.circle.x + (this.circle.width / 2) * Math.cos(radians);
+    const y = this.circle.y + (this.circle.width / 2) * Math.sin(radians);
+
+    return new TargetEntity(this, x - 20, y - 20)
+      .setOrigin(0.5, 1)
+      .setDepth(1)
+      .setAngle(targetAngle)
+      .setStartAngle(targetAngle);
   }
 }
 
@@ -136,6 +193,6 @@ function isSprite(obj: unknown): obj is Phaser.GameObjects.Sprite {
   return obj instanceof Phaser.GameObjects.Sprite;
 }
 
-function isKnife(obj: unknown): obj is BlackKnife {
-  return obj instanceof BlackKnife;
+function isKnife(obj: unknown): obj is KnifeEntity {
+  return obj instanceof KnifeEntity;
 }

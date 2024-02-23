@@ -10,5 +10,11 @@ export const Assets = {
       name: 'default_circle',
       path: 'src/assets/circles/circle-target.png'
     }
+  },
+  TARGETS: {
+    DEFAULT: {
+      name: 'default_target',
+      path: 'src/assets/targets/frame-apple.png'
+    }
   }
 };

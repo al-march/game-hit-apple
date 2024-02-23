@@ -1,7 +1,7 @@
 import { Entity } from '../Entity.ts';
 import { Assets } from '@assets';
 
-export class BlackKnife extends Entity {
+export class KnifeEntity extends Entity {
   threwAngle?: number;
 
   constructor(

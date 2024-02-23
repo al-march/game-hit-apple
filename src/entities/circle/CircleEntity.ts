@@ -1,7 +1,7 @@
 import { Entity } from '../Entity.ts';
 import { Assets } from '@assets';
 
-export class BlackCircle extends Entity {
+export class CircleEntity extends Entity {
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -10,6 +10,7 @@ export class BlackCircle extends Entity {
     super(scene, x, y, Assets.CIRCLES.DEFAULT.name);
     this.scene = scene;
     this.scene.add.existing(this);
-    this.setScale(0.6);
+    this.displayWidth = 380;
+    this.displayHeight = 380;
   }
 }
