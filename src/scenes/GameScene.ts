@@ -2,7 +2,7 @@ import { Assets } from '@assets';
 import { Constants } from '@constants';
 
 export class GameScene extends Phaser.Scene {
-    canThrow = true;
+    private canThrow = true;
     private knifeGroup!: Phaser.GameObjects.Group;
     private knife!: Phaser.GameObjects.Sprite;
     private circle!: Phaser.GameObjects.Sprite;
@@ -73,8 +73,6 @@ export class GameScene extends Phaser.Scene {
     private initCircle() {
         const config = this.scene.scene.game.config;
         const {width} = config;
-
-        console.log('width', width);
         return this.add.sprite(toInt(width) / 2, 400, Assets.CIRCLES.BLACK.name);
     }
 }
