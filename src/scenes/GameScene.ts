@@ -5,6 +5,7 @@ import { BlackCircle, BlackKnife } from '@entities';
 
 export class GameScene extends Phaser.Scene implements Scene {
     private canThrow = true;
+    private validHit = true;
     private knifeGroup!: Phaser.GameObjects.Group;
     private circle!: Phaser.GameObjects.Sprite;
     private knife!: BlackKnife;
@@ -27,7 +28,7 @@ export class GameScene extends Phaser.Scene implements Scene {
         this.input.on('pointerdown', this.throwKnife);
 
         const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        spaceBar.on('down', this.throwKnife)
+        spaceBar.on('down', this.throwKnife);
     }
 
     update() {
@@ -57,9 +58,37 @@ export class GameScene extends Phaser.Scene implements Scene {
                 callbackScope: this,
 
                 onComplete: () => {
-                    this.canThrow = true;
-                    this.addKnife(this.knife.x, this.knife.y);
-                    this.knife.y = this.getKnifeCoords().y;
+                    this.validHit = true;
+
+                    const knifes = this.knifeGroup.getChildren();
+                    for (let i = 0; i < knifes.length; i++) {
+                        const knife = knifes[i];
+                        if (isKnife(knife) && typeof knife.threwAngle === 'number') {
+                            const angleOffset = Math.abs(Phaser.Math.Angle.ShortestBetween(this.circle.angle, knife.threwAngle));
+                            if (angleOffset < Constants.MIN_ANGLE) {
+                                this.validHit = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (this.validHit) {
+                        const threwKnife = this.addKnife(this.knife.x, this.knife.y);
+                        threwKnife.setThrewAngle(this.circle.angle);
+                        this.knife.y = this.getKnifeCoords().y;
+                        this.canThrow = true;
+                    } else {
+                        this.tweens.add({
+                            targets: [this.knife],
+                            y: Constants.GAME.HEIGHT + this.knife.height,
+                            rotation: 5,
+                            duration: Constants.SPEED.THROW * 4,
+                            onComplete: () => {
+                                this.scene.start('PlayGame');
+                                this.canThrow = true;
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -68,6 +97,7 @@ export class GameScene extends Phaser.Scene implements Scene {
     private addKnife(x: number, y: number) {
         const knife = new BlackKnife(this, x, y);
         this.knifeGroup.add(knife);
+        return knife;
     }
 
     private initKnife() {
@@ -104,4 +134,8 @@ function toInt(input: string | number) {
 
 function isSprite(obj: unknown): obj is Phaser.GameObjects.Sprite {
     return obj instanceof Phaser.GameObjects.Sprite;
+}
+
+function isKnife(obj: unknown): obj is BlackKnife {
+    return obj instanceof BlackKnife;
 }

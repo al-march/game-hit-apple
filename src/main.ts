@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { GameScene } from '@scenes';
 import './style.css';
+import { Constants } from '@constants';
 
 const config = {
-    width: 750,
-    height: 1334,
+    width: Constants.GAME.WIDTH,
+    height: Constants.GAME.HEIGHT,
     backgroundColor: 0x444444,
     scene: [GameScene],
     physics: {
