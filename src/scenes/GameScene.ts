@@ -15,8 +15,8 @@ export class GameScene extends Phaser.Scene implements Scene {
     }
 
     preload() {
-        this.load.image(Assets.CIRCLES.BLACK.name, Assets.CIRCLES.BLACK.path);
-        this.load.image(Assets.KNIFES.BLACK.name, Assets.KNIFES.BLACK.path);
+        this.load.image(Assets.CIRCLES.DEFAULT.name, Assets.CIRCLES.DEFAULT.path);
+        this.load.image(Assets.KNIFES.DEFAULT.name, Assets.KNIFES.DEFAULT.path);
     }
 
     create() {

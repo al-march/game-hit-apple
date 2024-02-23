@@ -1,14 +1,14 @@
 export const Assets = {
     KNIFES: {
-        BLACK: {
-            name: 'knife_black',
-            path: 'src/assets/knifes/knife_black.png'
+        DEFAULT: {
+            name: 'default_knife',
+            path: 'src/assets/knifes/knife.png'
         },
     },
     CIRCLES: {
-        BLACK: {
-            name: 'circle_black',
-            path: 'src/assets/circles/circle_black.png'
+        DEFAULT: {
+            name: 'default_circle',
+            path: 'src/assets/circles/circle-target.png'
         }
     }
 };

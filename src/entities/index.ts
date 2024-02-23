@@ -1,2 +1,2 @@
-export * from './knife/BlackKnifeEntity.ts';
-export * from './circle/BlackCircleEntity.ts';
+export * from './knife/KnifeEntity.ts';
+export * from './circle/CircleEntity.ts';

@@ -9,10 +9,10 @@ export class BlackKnife extends Entity {
         x: number,
         y: number,
     ) {
-        super(scene, x, y, Assets.KNIFES.BLACK.name, Assets.KNIFES.BLACK.name);
+        super(scene, x, y, Assets.KNIFES.DEFAULT.name);
         this.scene = scene;
         this.scene.add.existing(this);
-        this.setScale(0.5);
+        this.setScale(0.6);
     }
 
     setThrewAngle(angle: number) {
