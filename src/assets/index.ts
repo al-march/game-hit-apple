@@ -1,31 +1,20 @@
-import knife from './knifes/knife.png';
-import circle from './circles/circle-target.png';
-import apple from './targets/frame-apple.png';
-
 export const Assets = {
   KNIFES: {
     DEFAULT: {
       name: 'default_knife',
-      path: knife
+      path: 'public/knife.png'
     },
   },
   CIRCLES: {
     DEFAULT: {
       name: 'default_circle',
-      path: circle
+      path: 'public/circle.png'
     }
   },
   TARGETS: {
     DEFAULT: {
       name: 'default_target',
-      path: apple
+      path: 'public/frame-apple.png'
     }
   },
-  FONTS: {
-    desyrel: {
-      key: 'desyrel',
-      png: 'public/fonts/Atari Sunset.png',
-      xml: 'public/fonts/atari-sunset.xml'
-    }
-  }
 };
