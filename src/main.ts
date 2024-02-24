@@ -9,7 +9,6 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [GameScene, UIScene],
   parent: 'game',
   fps: {
-    target: 120,
     // For safari
     forceSetTimeOut: false
   },
