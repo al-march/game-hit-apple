@@ -12,7 +12,7 @@ export class KnifeEntity extends Entity {
     super(scene, x, y, Assets.KNIFES.DEFAULT.name);
     this.scene = scene;
     this.scene.add.existing(this);
-    this.setScale(1.5);
+    this.setScale(2);
   }
 
   setThrewAngle(angle: number) {

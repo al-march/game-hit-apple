@@ -11,7 +11,6 @@ export class GameScene extends Phaser.Scene implements Scene {
   validHit = true;
   knifeCount = initialKnifeCount;
 
-
   knifeGroup!: Phaser.GameObjects.Group;
   knifeArsenal!: Phaser.GameObjects.Group;
   circle!: Phaser.GameObjects.Sprite;
@@ -59,20 +58,19 @@ export class GameScene extends Phaser.Scene implements Scene {
 
     // Score text
     this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, {
-        fontSize: 40
-      }
-    );
+      fontSize: 40
+    });
 
     this.fpsText = this.add.text(this.sys.canvas.width - 200, 20, `fps: ${this.fps.toFixed(3)}`, {
       fontSize: 40
-    })
+    });
 
     const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     spaceBar.on('down', this.throwKnife);
 
     setInterval(() => {
       this.fpsText.text = `fps: ${this.fps}`;
-    }, 100)
+    }, 100);
   }
 
   update(_: number, offset: number) {
@@ -134,21 +132,17 @@ export class GameScene extends Phaser.Scene implements Scene {
               this.destroyTarget();
               this.destroyCircle();
 
-              console.log('should be tween');
-              this.tweens.add({
-                targets: [this.knife],
-                y: -500,
-                duration: Constants.SPEED.THROW,
-                callbackScope: this,
-              });
+              this.knife.depth++;
+              this.putTheKnifeAcrossTheCircle();
               return;
             }
 
-            this.putTheKnife();
-            this.score += 10;
-
             if (this.knifeCount < 0) {
               this.destroyCircle();
+              this.putTheKnifeAcrossTheCircle();
+            } else {
+              this.putTheKnife();
+              this.score += 10;
             }
           } else {
             this.ricochetTheKnife();
@@ -186,11 +180,10 @@ export class GameScene extends Phaser.Scene implements Scene {
       targets: [this.target],
       angle: 45,
       duration: Constants.SPEED.THROW * 6,
-      ease: 'linear',
+      ease: 'expo.in',
       y: y(this.target),
       x: x(),
     });
-
 
     const slicesX = [
       Phaser.Math.Between(-200, Constants.GAME.WIDTH / 2),
@@ -210,8 +203,7 @@ export class GameScene extends Phaser.Scene implements Scene {
       this.tweens.add({
         targets: [slice],
         angle: 45,
-        duration: Constants.SPEED.THROW * 6,
-        ease: 'linear',
+        duration: Constants.SPEED.THROW * 5,
         y: y(slice),
         x: slicesX[i - 1],
         onComplete: () => {
@@ -253,6 +245,18 @@ export class GameScene extends Phaser.Scene implements Scene {
     this.knife.y = this.getKnifeCoords().y;
     this.canThrow = true;
     return threwKnife;
+  }
+
+  private putTheKnifeAcrossTheCircle() {
+    this.knife.depth++;
+    this.tweens.add({
+      targets: [this.knife],
+      y: -500,
+      ease: 'quint.inout',
+      duration: Constants.SPEED.THROW * 3,
+      callbackScope: this,
+      onComplete: () => this.knife.depth--
+    });
   }
 
   private ricochetTheKnife() {

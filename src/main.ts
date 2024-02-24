@@ -10,7 +10,7 @@ const config: Phaser.Types.Core.GameConfig = {
   fps: {
     target: 120,
     // For safari
-    forceSetTimeOut: true
+    forceSetTimeOut: false
   },
   physics: {
     default: 'arcade',
