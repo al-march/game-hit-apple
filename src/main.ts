@@ -4,10 +4,9 @@ import './style.css';
 import { Constants } from '@constants';
 
 const config = {
-  width: Constants.GAME.WIDTH,
-  height: Constants.GAME.HEIGHT,
-  backgroundColor: 0x213123,
+  transparent: true,
   scene: [GameScene],
+  parent: 'game',
   physics: {
     default: 'arcade',
     arcade: {
@@ -16,17 +15,30 @@ const config = {
   },
   scale: {
     mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
+    parent: 'game',
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: Constants.GAME.WIDTH,
+    height: Constants.GAME.HEIGHT,
   },
 };
 
 window.onload = () => {
-  new Phaser.Game(config);
+  const startBtn = document.querySelector('.start-button')!;
+  const startScreen = document.querySelector('.start')!;
+
+  startBtn.addEventListener('click', () => {
+    startGame();
+    startScreen.remove();
+  });
 
   window.focus();
   resize();
   window.addEventListener('resize', resize, false);
 };
+
+function startGame() {
+  new Phaser.Game(config);
+}
 
 function resize() {
   let canvas = document.querySelector('canvas');
@@ -34,7 +46,8 @@ function resize() {
     let windowWidth = window.innerWidth;
     let windowHeight = window.innerHeight;
     let windowRatio = windowWidth / windowHeight;
-    let gameRatio = config.width / config.height;
+    let gameRatio = Constants.GAME.WIDTH / Constants.GAME.HEIGHT;
+
     if (windowRatio < gameRatio) {
       canvas.style.width = windowWidth + 'px';
       canvas.style.height = (windowWidth / gameRatio) + 'px';

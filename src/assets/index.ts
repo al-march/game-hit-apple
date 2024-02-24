@@ -1,5 +1,5 @@
 import circle from './circles/frame-circle.png';
-import knife from './knifes/knife.png';
+import knife from './knifes/neon.png';
 import apple from './targets/frame-apple.png';
 
 export const Assets = {

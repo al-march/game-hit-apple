@@ -290,13 +290,13 @@ export class GameScene extends Phaser.Scene implements Scene {
       const knife = new KnifeEntity(this, 50 + width, height - ((70 * i) + 50))
         .setRotation(1.6)
         .setSize(width, 20)
-        .setScale(0.35);
+        .setScale(1);
 
       const fx = knife.preFX?.addGlow();
 
       this.tweens.add({
         targets: fx,
-        outerStrength: 10,
+        outerStrength: 2,
         yoyo: true,
         loop: -1,
         ease: 'sine.inout'

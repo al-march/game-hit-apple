@@ -5,5 +5,79 @@
 body {
   margin: 0;
   padding: 0;
-  background: #213123;
+  height: 100vh;
+  overflow: hidden;
+  background-image: url(bg.png);
+  background-size: cover;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+}
+
+.start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px
+}
+
+.start-knife {
+  width: 30px;
+}
+
+.start-knife img {
+  width: 100%;
+}
+
+.start-button {
+  border-radius: 5px;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 8px 14px;
+
+  outline: none;
+  border: none;
+  background: darkolivegreen;
+  color: #FFFFFF;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 8px 24px;
+  animation: pulse 1.4s infinite;
+}
+
+.start-spacer {
+  flex: 1 0 0
+}
+
+.start-footer {
+  position: sticky;
+  bottom: 0;
+  color: #FFFFFF;
+
+  padding-bottom: 20px;
+}
+
+.start-footer a {
+  color: #DEDEDE;
+  text-decoration: underline;
+}
+
+.start-footer a:visited {
+  color: #c1c1c1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
 }
