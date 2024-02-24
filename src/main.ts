@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { GameScene } from '@scenes';
+import { GameScene, UIScene } from '@scenes';
 import './style.css';
 import { Constants } from '@constants';
 
 const config: Phaser.Types.Core.GameConfig = {
+  type: Phaser.AUTO,
   transparent: true,
-  scene: [GameScene],
+  scene: [GameScene, UIScene],
   parent: 'game',
   fps: {
     target: 120,
@@ -15,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
+      debug: true,
     }
   },
   scale: {

@@ -4,28 +4,28 @@ import { Scene } from './Scene.ts';
 import { CircleEntity, KnifeEntity } from '@entities';
 import { TargetEntity } from '../entities/target/TargetEntity.ts';
 
-const initialKnifeCount = 5;
+const initKnifeLimit = 5;
+
+export const GameState = {
+  SCORE: 'score',
+  KNIFES: 'knifes',
+};
 
 export class GameScene extends Phaser.Scene implements Scene {
   canThrow = true;
   validHit = true;
-  knifeCount = initialKnifeCount;
+  knifeLimit = initKnifeLimit;
 
   knifeGroup!: Phaser.GameObjects.Group;
-  knifeArsenal!: Phaser.GameObjects.Group;
   circle!: Phaser.GameObjects.Sprite;
   knife!: KnifeEntity;
   target!: TargetEntity;
 
   score = 0;
-  scoreText!: Phaser.GameObjects.Text;
   isCircleDestroying = false;
 
-  fps = 0;
-  fpsText!: Phaser.GameObjects.Text;
-
   constructor() {
-    super('PlayGame');
+    super({key: 'PlayGame', active: true});
   }
 
   preload() {
@@ -46,34 +46,23 @@ export class GameScene extends Phaser.Scene implements Scene {
 
     this.knife = this.initKnife();
     this.knifeGroup = this.add.group();
-    this.knifeArsenal = this.add.group();
-    this.knifeCount = initialKnifeCount;
+    this.knifeLimit = initKnifeLimit;
 
     this.circle = this.initCircle();
     this.target = this.initTarget();
-    this.renderKnifes();
     // Слой с колесом будет спереди
     this.circle.depth = 1;
     this.input.on('pointerdown', this.throwKnife);
 
-    // Score text
-    this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, {
-      fontSize: 40
-    });
-
-    this.fpsText = this.add.text(this.sys.canvas.width - 200, 20, `fps: ${this.fps.toFixed(3)}`, {
-      fontSize: 40
-    });
-
     const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     spaceBar.on('down', this.throwKnife);
 
-    setInterval(() => {
-      this.fpsText.text = `fps: ${this.fps}`;
-    }, 100);
+    this.setScore(this.score);
+    this.setKnifeLimit(this.knifeLimit);
   }
 
   update(_: number, offset: number) {
+
     const rotation = Constants.SPEED.ROTATION * (offset * 0.25);
     this.circle.angle += rotation;
 
@@ -84,7 +73,6 @@ export class GameScene extends Phaser.Scene implements Scene {
           if (isSprite(knife)) {
             knife.angle += rotation;
             const radians = Phaser.Math.DegToRad(knife.angle + 90);
-
             // тригонометрия, чтобы заставить нож вращаться вокруг центра мишени
             knife.x = this.circle.x + ((this.circle.width - 140) / 2) * Math.cos(radians);
             knife.y = this.circle.y + ((this.circle.width - 140) / 2) * Math.sin(radians);
@@ -94,22 +82,10 @@ export class GameScene extends Phaser.Scene implements Scene {
       if (!this.target.isHit) {
         this.target.angle += rotation;
         const radians = Phaser.Math.DegToRad(this.target.angle - 90);
-        this.target.x = this.circle.x + ((this.circle.width - 200) / 2) * Math.cos(radians);
-        this.target.y = this.circle.y + ((this.circle.width - 200) / 2) * Math.sin(radians);
+        this.target.x = this.circle.x + ((this.circle.width - 100) / 2) * Math.cos(radians);
+        this.target.y = this.circle.y + ((this.circle.width - 100) / 2) * Math.sin(radians);
       }
     }
-
-    this.knifeArsenal
-      .getChildren()
-      .forEach((knife, i) => {
-        if (i >= this.knifeCount) {
-          knife.destroy();
-        }
-      });
-
-    this.fps = 1000 / offset;
-
-    this.scoreText.text = `Score: ${this.score}`;
   }
 
   throwKnife = () => {
@@ -120,33 +96,32 @@ export class GameScene extends Phaser.Scene implements Scene {
         targets: [this.knife],
         y: this.circle.y + this.circle.width / 2,
         duration: Constants.SPEED.THROW,
-        callbackScope: this,
-
         onComplete: () => {
           this.validHit = this.checkIsValidThrew();
+          const isHitToAnTarget = this.checkIsTargetHit();
 
           if (this.validHit) {
-            const isHitToAnTarget = Math.abs(Phaser.Math.Angle.ShortestBetween(this.circle.angle, 180 - this.target.startAngle)) < Constants.MIN_ANGLE;
 
-            if (isHitToAnTarget && !this.target.isHit) {
+            if (isHitToAnTarget) {
               this.destroyTarget();
               this.destroyCircle();
 
-              this.knife.depth++;
               this.putTheKnifeAcrossTheCircle();
+              this.setScore(this.score + 25);
               return;
             }
 
-            if (this.knifeCount < 0) {
+            if (this.knifeLimit <= 0) {
               this.destroyCircle();
               this.putTheKnifeAcrossTheCircle();
             } else {
-              this.putTheKnife();
-              this.score += 10;
+              this.threwTheKnife();
+              this.setScore(this.score + 10);
             }
           } else {
             this.ricochetTheKnife();
           }
+          this.canThrow = true;
         }
       });
     }
@@ -220,8 +195,6 @@ export class GameScene extends Phaser.Scene implements Scene {
     const slice = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 1);
     const slice2 = this.add.sprite(this.target.x, this.target.y, Assets.TARGETS.DEFAULT.name, 2);
 
-    this.score += 25;
-
     slice
       .setAngle(this.target.angle)
       .setOrigin(0.5, 1);
@@ -238,12 +211,10 @@ export class GameScene extends Phaser.Scene implements Scene {
     });
   }
 
-  private putTheKnife() {
+  private threwTheKnife() {
     const threwKnife = this.addKnife(this.knife.x, this.knife.y);
-    this.knifeCount--;
-    threwKnife.setThrewAngle(this.circle.angle);
+    this.setKnifeLimit(this.knifeLimit - 1);
     this.knife.y = this.getKnifeCoords().y;
-    this.canThrow = true;
     return threwKnife;
   }
 
@@ -267,21 +238,17 @@ export class GameScene extends Phaser.Scene implements Scene {
       duration: Constants.SPEED.THROW * 4,
       onComplete: () => {
         this.scene.start('PlayGame');
-        this.score = 0;
+        this.setScore(0);
       }
     });
   }
 
   private checkIsValidThrew() {
-    const knifes = this.knifeGroup.getChildren();
-    for (let i = 0; i < knifes.length; i++) {
-      const knife = knifes[i];
-      if (isKnife(knife) && typeof knife.threwAngle === 'number') {
-        const angleOffset = Math.abs(Phaser.Math.Angle.ShortestBetween(this.circle.angle, knife.threwAngle));
-        return angleOffset > Constants.MIN_ANGLE;
-      }
-    }
-    return true;
+    return !this.physics.collide(this.knife, this.knifeGroup);
+  }
+
+  private checkIsTargetHit() {
+    return this.physics.collide(this.knife, this.target);
   }
 
   private addKnife(x: number, y: number) {
@@ -298,33 +265,6 @@ export class GameScene extends Phaser.Scene implements Scene {
       x: toInt(width) / 2,
       y: toInt(height) / 5 * 4.4,
     };
-  }
-
-  private renderKnifes() {
-    const createKnife = (i: number) => {
-      const width = 100;
-      const height = this.sys.canvas.height;
-      const knife = new KnifeEntity(this, 50 + width, height - ((70 * i) + 50))
-        .setRotation(1.6)
-        .setSize(width, 20)
-        .setScale(1);
-
-      const fx = knife.preFX?.addGlow();
-
-      this.tweens.add({
-        targets: fx,
-        outerStrength: 2,
-        yoyo: true,
-        loop: -1,
-        ease: 'sine.inout'
-      });
-
-      this.knifeArsenal.add(knife);
-    };
-
-    for (let i = 0; i < this.knifeCount; i++) {
-      createKnife(i);
-    }
   }
 
   private initKnife() {
@@ -347,11 +287,24 @@ export class GameScene extends Phaser.Scene implements Scene {
     const x = this.circle.x + (this.circle.width / 2) * Math.cos(radians);
     const y = this.circle.y + (this.circle.width / 2) * Math.sin(radians);
 
-    return new TargetEntity(this, x - 20, y - 20)
-      .setOrigin(0.5, 1)
-      .setDepth(1)
-      .setAngle(targetAngle)
-      .setStartAngle(targetAngle);
+    return new TargetEntity(this, x, y)
+      .setAngle(targetAngle);
+  }
+
+  /**
+   * Should emit every time when score changes
+   */
+  private setScore(score: number) {
+    this.score = score;
+    this.registry.set(GameState.SCORE, this.score);
+  }
+
+  /**
+   * Should emit every time when knife's count changes
+   */
+  private setKnifeLimit(count: number) {
+    this.knifeLimit = count;
+    this.registry.set(GameState.KNIFES, this.knifeLimit);
   }
 }
 
