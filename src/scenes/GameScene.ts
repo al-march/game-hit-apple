@@ -110,6 +110,7 @@ export class GameScene extends Phaser.Scene implements Scene {
         y: this.circle.y + this.circle.width / 2,
         duration: Constants.SPEED.THROW,
         callbackScope: this,
+
         onComplete: () => {
           this.validHit = this.checkIsValidThrew();
 
@@ -118,8 +119,16 @@ export class GameScene extends Phaser.Scene implements Scene {
 
             if (isHitToAnTarget && !this.target.isHit) {
               this.destroyTarget();
-              this.putTheKnife();
               this.destroyCircle();
+
+              console.log('should be tween');
+              this.tweens.add({
+                targets: [this.knife],
+                y: -500,
+                duration: Constants.SPEED.THROW,
+                callbackScope: this,
+              });
+              return;
             }
 
             this.putTheKnife();
@@ -169,6 +178,13 @@ export class GameScene extends Phaser.Scene implements Scene {
       x: x(),
     });
 
+
+    const slicesX = [
+      Phaser.Math.Between(-200, Constants.GAME.WIDTH / 2),
+      Phaser.Math.Between(900, Constants.GAME.WIDTH),
+      Phaser.Math.Between(0, Constants.GAME.WIDTH / 3)
+    ];
+
     for (let i = 1; i <= 3; i++) {
       const slice = this.add.sprite(
         this.circle.x,
@@ -184,7 +200,7 @@ export class GameScene extends Phaser.Scene implements Scene {
         duration: Constants.SPEED.THROW * 6,
         ease: 'linear',
         y: y(slice),
-        x: x(),
+        x: slicesX[i - 1],
         onComplete: () => {
           this.scene.start('PlayGame');
         }
@@ -234,6 +250,7 @@ export class GameScene extends Phaser.Scene implements Scene {
       duration: Constants.SPEED.THROW * 4,
       onComplete: () => {
         this.scene.start('PlayGame');
+        this.score = 0;
       }
     });
   }
