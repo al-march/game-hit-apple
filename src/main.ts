@@ -6,12 +6,12 @@ import { Constants } from '@constants';
 const config = {
   width: Constants.GAME.WIDTH,
   height: Constants.GAME.HEIGHT,
-  backgroundColor: 0x444444,
+  backgroundColor: 0x213123,
   scene: [GameScene],
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true,
+      debug: false,
     }
   },
   scale: {

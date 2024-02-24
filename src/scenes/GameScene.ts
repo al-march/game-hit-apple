@@ -102,7 +102,7 @@ export class GameScene extends Phaser.Scene implements Scene {
   }
 
   throwKnife = () => {
-    if (this.canThrow) {
+    if (this.canThrow && !this.isCircleDestroying) {
       this.canThrow = false;
 
       this.tweens.add({
@@ -118,6 +118,8 @@ export class GameScene extends Phaser.Scene implements Scene {
 
             if (isHitToAnTarget && !this.target.isHit) {
               this.destroyTarget();
+              this.putTheKnife();
+              this.destroyCircle();
             }
 
             this.putTheKnife();
@@ -127,7 +129,7 @@ export class GameScene extends Phaser.Scene implements Scene {
               this.destroyCircle();
             }
           } else {
-            this.ricochetTHeKnife();
+            this.ricochetTheKnife();
           }
         }
       });
@@ -135,6 +137,7 @@ export class GameScene extends Phaser.Scene implements Scene {
   };
 
   private destroyCircle() {
+    this.canThrow = false;
     this.isCircleDestroying = true;
     const y = (slice: Phaser.GameObjects.Sprite) => this.sys.canvas.height + slice.height;
     const x = () => Phaser.Math.Between(-200, Constants.GAME.WIDTH);
@@ -223,7 +226,7 @@ export class GameScene extends Phaser.Scene implements Scene {
     return threwKnife;
   }
 
-  private ricochetTHeKnife() {
+  private ricochetTheKnife() {
     this.tweens.add({
       targets: [this.knife],
       y: Constants.GAME.HEIGHT + this.knife.height,
