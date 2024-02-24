@@ -22,6 +22,9 @@ export class GameScene extends Phaser.Scene implements Scene {
   scoreText!: Phaser.GameObjects.Text;
   isCircleDestroying = false;
 
+  fps = 0;
+  fpsText!: Phaser.GameObjects.Text;
+
   constructor() {
     super('PlayGame');
   }
@@ -60,8 +63,16 @@ export class GameScene extends Phaser.Scene implements Scene {
       }
     );
 
+    this.fpsText = this.add.text(this.sys.canvas.width - 200, 20, `fps: ${this.fps.toFixed(3)}`, {
+      fontSize: 40
+    })
+
     const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     spaceBar.on('down', this.throwKnife);
+
+    setInterval(() => {
+      this.fpsText.text = `fps: ${this.fps}`;
+    }, 100)
   }
 
   update(_: number, offset: number) {
@@ -98,7 +109,9 @@ export class GameScene extends Phaser.Scene implements Scene {
         }
       });
 
-    this.scoreText.text = 'Score: ' + this.score;
+    this.fps = 1000 / offset;
+
+    this.scoreText.text = `Score: ${this.score}`;
   }
 
   throwKnife = () => {

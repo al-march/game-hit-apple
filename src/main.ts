@@ -3,10 +3,15 @@ import { GameScene } from '@scenes';
 import './style.css';
 import { Constants } from '@constants';
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
   transparent: true,
   scene: [GameScene],
   parent: 'game',
+  fps: {
+    target: 120,
+    // For safari
+    forceSetTimeOut: true
+  },
   physics: {
     default: 'arcade',
     arcade: {
