@@ -23,6 +23,11 @@ export class GameScene extends Phaser.Scene implements Scene {
 
   score = 0;
   isCircleDestroying = false;
+  isKnifeRicocheting = false;
+
+  get isAllowToThrew() {
+    return this.canThrow && !this.isCircleDestroying && !this.isKnifeRicocheting;
+  }
 
   constructor() {
     super({key: 'PlayGame', active: true});
@@ -57,12 +62,11 @@ export class GameScene extends Phaser.Scene implements Scene {
     const spaceBar = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     spaceBar.on('down', this.throwKnife);
 
-    this.setScore(this.score);
-    this.setKnifeLimit(this.knifeLimit);
+    this.emitScore(this.score);
+    this.emitKnifeLimit(this.knifeLimit);
   }
 
   update(_: number, offset: number) {
-
     const rotation = Constants.SPEED.ROTATION * (offset * 0.25);
     this.circle.angle += rotation;
 
@@ -89,7 +93,7 @@ export class GameScene extends Phaser.Scene implements Scene {
   }
 
   throwKnife = () => {
-    if (this.canThrow && !this.isCircleDestroying) {
+    if (this.isAllowToThrew) {
       this.canThrow = false;
 
       this.tweens.add({
@@ -101,13 +105,12 @@ export class GameScene extends Phaser.Scene implements Scene {
           const isHitToAnTarget = this.checkIsTargetHit();
 
           if (this.validHit) {
-
             if (isHitToAnTarget) {
               this.destroyTarget();
               this.destroyCircle();
 
               this.putTheKnifeAcrossTheCircle();
-              this.setScore(this.score + 25);
+              this.emitScore(this.score + 4);
               return;
             }
 
@@ -116,7 +119,7 @@ export class GameScene extends Phaser.Scene implements Scene {
               this.putTheKnifeAcrossTheCircle();
             } else {
               this.threwTheKnife();
-              this.setScore(this.score + 10);
+              this.emitScore(this.score + 1);
             }
           } else {
             this.ricochetTheKnife();
@@ -128,6 +131,8 @@ export class GameScene extends Phaser.Scene implements Scene {
   };
 
   private destroyCircle() {
+    this.emitScore(this.score + 10);
+
     this.canThrow = false;
     this.isCircleDestroying = true;
     const y = (slice: Phaser.GameObjects.Sprite) => this.sys.canvas.height + slice.height;
@@ -213,7 +218,7 @@ export class GameScene extends Phaser.Scene implements Scene {
 
   private threwTheKnife() {
     const threwKnife = this.addKnife(this.knife.x, this.knife.y);
-    this.setKnifeLimit(this.knifeLimit - 1);
+    this.emitKnifeLimit(this.knifeLimit - 1);
     this.knife.y = this.getKnifeCoords().y;
     return threwKnife;
   }
@@ -231,6 +236,8 @@ export class GameScene extends Phaser.Scene implements Scene {
   }
 
   private ricochetTheKnife() {
+    this.isKnifeRicocheting = true;
+
     this.tweens.add({
       targets: [this.knife],
       y: Constants.GAME.HEIGHT + this.knife.height,
@@ -238,7 +245,8 @@ export class GameScene extends Phaser.Scene implements Scene {
       duration: Constants.SPEED.THROW * 4,
       onComplete: () => {
         this.scene.start('PlayGame');
-        this.setScore(0);
+        this.isKnifeRicocheting = false;
+        this.emitScore(0);
       }
     });
   }
@@ -294,7 +302,7 @@ export class GameScene extends Phaser.Scene implements Scene {
   /**
    * Should emit every time when score changes
    */
-  private setScore(score: number) {
+  private emitScore(score = this.score) {
     this.score = score;
     this.registry.set(GameState.SCORE, this.score);
   }
@@ -302,7 +310,7 @@ export class GameScene extends Phaser.Scene implements Scene {
   /**
    * Should emit every time when knife's count changes
    */
-  private setKnifeLimit(count: number) {
+  private emitKnifeLimit(count: number) {
     this.knifeLimit = count;
     this.registry.set(GameState.KNIFES, this.knifeLimit);
   }
